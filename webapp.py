@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import urllib.parse
+import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -76,6 +77,20 @@ def get_rows():
     return rows
 
 
+def check_login():
+    """로그인 브라우저(CDP 9222)가 살아있고 Business Suite에 로그인됐는지."""
+    try:
+        raw = urllib.request.urlopen("http://localhost:9222/json", timeout=2).read()
+        tabs = json.loads(raw)
+    except Exception:
+        return {"browser": False, "logged_in": False}
+    for t in tabs:
+        u = t.get("url", "")
+        if "business.facebook.com" in u and "login" not in u.lower():
+            return {"browser": True, "logged_in": True}
+    return {"browser": True, "logged_in": False}
+
+
 COLLECT_STATE = {"running": False, "msg": ""}
 
 
@@ -119,8 +134,8 @@ INDEX_HTML = r"""<!doctype html><html lang=ko><head><meta charset=utf-8>
 <div class=wrap>
  <div class=card>
    <div class=step>① 로그인 (최초 1회)</div>
-   <div class=bar><button onclick="api('login')">로그인 브라우저 열기</button>
-   <span>열린 크롬에서 Business Suite에 로그인하세요.</span></div>
+   <div class=bar><button id=loginBtn onclick="doLogin()">로그인 브라우저 열기</button>
+   <span id=loginStatus>확인 중...</span></div>
  </div>
  <div class=card>
    <div class=step>② 관리할 계정 '받은메시지함' 링크 붙여넣기 (한 줄에 하나)</div>
@@ -153,6 +168,15 @@ INDEX_HTML = r"""<!doctype html><html lang=ko><head><meta charset=utf-8>
 let rows=[], checked=new Set();
 function setStatus(m){document.getElementById('status').textContent=m}
 async function api(path,body){const r=await fetch('/api/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});return r.json()}
+async function doLogin(){await api('login');setTimeout(checkLogin,2500);}
+async function checkLogin(){
+  let s;try{s=await(await fetch('/api/login_status')).json()}catch(e){return}
+  const el=document.getElementById('loginStatus'),btn=document.getElementById('loginBtn');
+  if(s.logged_in){el.textContent='✅ 로그인 완료';el.style.color='#1a9e4b';el.style.fontWeight='700';btn.textContent='로그인 브라우저 다시 열기';}
+  else if(s.browser){el.textContent='⏳ 브라우저 열림 — 그 창에서 로그인하세요';el.style.color='#f5a623';el.style.fontWeight='700';}
+  else{el.textContent='❌ 아직 로그인 안 됨 — 왼쪽 버튼을 누르세요';el.style.color='#e0245e';el.style.fontWeight='700';}
+}
+setInterval(checkLogin,3000);checkLogin();
 async function loadComments(){const r=await fetch('/api/comments');rows=await r.json();checked.clear();render();document.getElementById('accinfo').textContent='등록 계정: '+(await (await fetch('/api/accounts')).json()).count+'개';}
 function render(){
   const plat=document.getElementById('fplat').value, kw=document.getElementById('fkw').value.toLowerCase();
@@ -213,6 +237,8 @@ class H(BaseHTTPRequestHandler):
             self._send(200, json.dumps({"count": len(load_accounts_file()["accounts"])}))
         elif p == "/api/collect_status":
             self._send(200, json.dumps(COLLECT_STATE))
+        elif p == "/api/login_status":
+            self._send(200, json.dumps(check_login()))
         else:
             self._send(404, "{}")
 
