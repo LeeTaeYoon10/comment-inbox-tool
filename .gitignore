@@ -1,0 +1,22 @@
+# 로그인 세션/프로필 (절대 공유 금지)
+bizprofile/
+profile/
+profiles/
+
+# 스크린샷/수집데이터/로그
+shots/
+*.png
+inbox_comments.json
+inbox_before.json
+status*.log
+*.output
+
+# API 방식(폐기) 민감정보 — 혹시라도 유입 방지
+config.json
+accounts.json
+ig_accounts.json
+scrape_result.json
+
+# 파이썬
+__pycache__/
+*.pyc

@@ -1,0 +1,38 @@
+# 댓글 통합관리 (인스타/페북 광고 댓글)
+
+여러 광고 계정(인스타/페북)의 **광고 댓글**을 한 화면에 모아 **삭제·숨김·차단**하는 툴.
+Meta Business Suite 받은메시지함을 브라우저 자동화로 다룹니다. **각자 자기 PC에서 자기 계정으로** 실행됩니다.
+
+## 동작 방식
+- 자기 PC의 크롬을 띄워 **본인 Business Suite에 로그인** → 툴이 그 크롬을 조종해 댓글을 모으고 삭제/차단.
+- 클라우드가 아니라 **로컬 실행**. 로그인 세션·계정정보는 본인 PC에만 저장(공유 안 됨).
+
+## 준비물 (이미 설치돼 있다고 가정)
+- Python 3.10+
+- Google Chrome
+- 패키지: `pip install -r requirements.txt` 후 `python -m playwright install chromium` (또는 시스템 크롬 사용)
+
+## 사용법
+1. 실행:
+   ```
+   python inbox_manager.py
+   ```
+2. 창이 뜨면:
+   - **① 로그인 브라우저 열기** → 열린 크롬에서 **본인 Business Suite 로그인**(최초 1회)
+   - **② 관리할 계정 '받은메시지함' 링크 붙여넣기** (한 줄에 하나) → **계정 등록**
+     - 링크 예: `https://business.facebook.com/latest/inbox/instagram?business_id=...&asset_id=<페이지ID>&mailbox_id=<페이지ID>`
+     - 링크에서 자동으로 계정(page) ID를 추출합니다.
+   - **③ 댓글 수집** → 전 계정 광고 댓글이 최신순으로 표에 모임
+3. 댓글 선택(✓) → **선택 삭제 / 숨기기 / 차단**
+   - 처리되면 그 댓글이 즉시 목록에서 사라지고, 실제 반영됐는지 검증됩니다.
+
+## 파일
+- `inbox_manager.py` — 메인 GUI (이것만 실행)
+- `biz_inbox.py` — 로그인용 크롬 세션(CDP 9222)
+- `inbox_collect.py` — 전 계정 댓글 수집
+- `inbox_actions.py` — 삭제/숨김/차단 실행
+- `check_author.py` — 특정 댓글 잔존 확인(점검용)
+
+## 주의
+- 로그인 세션 폴더(`bizprofile/`)와 개인정보는 **git에 올리지 않습니다**(.gitignore 처리).
+- 인스타 '차단'은 메뉴 명칭이 환경에 따라 다를 수 있어(사용자 차단/제한) 첫 실행 시 한 번 확인 권장.
