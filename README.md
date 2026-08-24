@@ -18,11 +18,9 @@ Meta Business Suite 받은메시지함을 브라우저 자동화로 다룹니다
 - 패키지: `pip install -r requirements.txt` 후 `python -m playwright install chromium` (또는 시스템 크롬 사용)
 
 ## 사용법
-1. 실행:
-   ```
-   python inbox_manager.py
-   ```
-2. 창이 뜨면:
+1. 실행: **`실행.bat` 더블클릭** (또는 `python webapp.py`)
+   → **자기 브라우저에 관리 화면(UI)이 자동으로 열립니다** (http://localhost:8765, 본인 PC 안에서만 열림)
+2. 화면이 뜨면:
    - **① 로그인 브라우저 열기** → 열린 크롬에서 **본인 Business Suite 로그인**(최초 1회)
    - **② 관리할 계정 '받은메시지함' 링크 붙여넣기** (한 줄에 하나) → **계정 등록**
      - 링크 예: `https://business.facebook.com/latest/inbox/instagram?business_id=...&asset_id=<페이지ID>&mailbox_id=<페이지ID>`
