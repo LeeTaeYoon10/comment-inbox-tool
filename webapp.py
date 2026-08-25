@@ -127,6 +127,8 @@ INDEX_HTML = r"""<!doctype html><html lang=ko><head><meta charset=utf-8>
  tr:hover{background:#f7f9fc}
  .tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:11px;color:#fff}
  .ig{background:#c13584}.fb{background:#1877f2}
+ .ptab{background:#e4e6eb;color:#333;font-weight:700}
+ .ptab.active{background:#1877f2;color:#fff}
  #status{color:#444;font-size:13px;margin-left:10px}
  .bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 </style></head><body>
@@ -148,7 +150,9 @@ INDEX_HTML = r"""<!doctype html><html lang=ko><head><meta charset=utf-8>
  </div>
  <div class=card>
    <div class=bar>
-     <label>매체 <select id=fplat onchange=render()><option>전체</option><option>IG</option><option>FB</option></select></label>
+     <button class="ptab active" onclick="setPlat('전체',this)">전체 <span id=cAll></span></button>
+     <button class="ptab" onclick="setPlat('IG',this)">📷 인스타그램 <span id=cIG></span></button>
+     <button class="ptab" onclick="setPlat('FB',this)">👍 페이스북 <span id=cFB></span></button>
      <input id=fkw placeholder=검색 oninput=render()>
      <button class=gray onclick="checkAll(true)">전체선택</button>
      <button class=gray onclick="checkAll(false)">해제</button>
@@ -165,8 +169,9 @@ INDEX_HTML = r"""<!doctype html><html lang=ko><head><meta charset=utf-8>
  </div>
 </div>
 <script>
-let rows=[], checked=new Set();
+let rows=[], checked=new Set(), curPlat='전체';
 function setStatus(m){document.getElementById('status').textContent=m}
+function setPlat(p,btn){curPlat=p;document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
 async function api(path,body){const r=await fetch('/api/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body||{})});return r.json()}
 async function doLogin(){await api('login');setTimeout(checkLogin,2500);}
 async function checkLogin(){
@@ -179,7 +184,10 @@ async function checkLogin(){
 setInterval(checkLogin,3000);checkLogin();
 async function loadComments(){const r=await fetch('/api/comments');rows=await r.json();checked.clear();render();document.getElementById('accinfo').textContent='등록 계정: '+(await (await fetch('/api/accounts')).json()).count+'개';}
 function render(){
-  const plat=document.getElementById('fplat').value, kw=document.getElementById('fkw').value.toLowerCase();
+  const plat=curPlat, kw=document.getElementById('fkw').value.toLowerCase();
+  document.getElementById('cAll').textContent='('+rows.length+')';
+  document.getElementById('cIG').textContent='('+rows.filter(r=>r.plat==='IG').length+')';
+  document.getElementById('cFB').textContent='('+rows.filter(r=>r.plat==='FB').length+')';
   const tb=document.getElementById('tb');tb.innerHTML='';let n=0;
   rows.forEach((r,i)=>{
     if(plat!=='전체'&&r.plat!==plat)return;
