@@ -9,7 +9,7 @@ import time
 from playwright.sync_api import sync_playwright
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-CDP = "http://localhost:9222"
+CDP = "http://127.0.0.1:9222"
 
 
 def _biz():
@@ -18,8 +18,9 @@ def _biz():
 
 
 def _inbox_url(biz, page_id, platform):
+    # business_id 생략 → 메타가 올바른 포트폴리오로 자동 해결
     return (f"https://business.facebook.com/latest/inbox/{platform}"
-            f"?business_id={biz}&page_id={page_id}&asset_id={page_id}&mailbox_id={page_id}")
+            f"?page_id={page_id}&asset_id={page_id}&mailbox_id={page_id}")
 
 
 FIND_THREAD_JS = r"""(preview)=>{
@@ -49,14 +50,14 @@ FIND_DOTS_JS = r"""(author)=>{
   for(const e of document.querySelectorAll('div,span,a')){
     const own=Array.from(e.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
     const r=e.getBoundingClientRect();
-    if(own===author && r.left>=550 && r.left<=610 && r.top>240 && r.top<860){ a={top:r.top,left:r.left}; break; }
+    if(own===author && r.left>=540 && r.left<=900 && r.top>240 && r.top<860){ a={top:r.top,left:r.left}; break; }
   }
   if(!a) return null;
-  // 그 행 아래 액션줄(top+5~top+45)의 작은 아이콘버튼들 중 가장 오른쪽
+  // 그 댓글 근처(top-12~+55)의 작은 아이콘버튼(...) 중 가장 오른쪽 (IG·FB 모두)
   let dots=null;
   for(const e of document.querySelectorAll('[role=button],button,a,div,i')){
     const r=e.getBoundingClientRect();
-    if(r.top>a.top+5 && r.top<a.top+48 && r.left>640 && r.width>0 && r.width<26 && r.height>0 && r.height<26){
+    if(r.top>a.top-12 && r.top<a.top+55 && r.left>640 && r.width>0 && r.width<26 && r.height>0 && r.height<26){
       if(!dots || r.left>dots.left) dots={left:r.left, top:r.top, w:r.width};
     }
   }
@@ -71,7 +72,7 @@ FIND_COMMENT_JS = r"""(author)=>{
   for(const e of document.querySelectorAll('div,span,a')){
     const own=Array.from(e.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
     const r=e.getBoundingClientRect();
-    if(own===author && r.left>=550 && r.left<=610 && r.top>240 && r.top<860){ a={top:r.top,left:r.left}; break; }
+    if(own===author && r.left>=540 && r.left<=900 && r.top>240 && r.top<860){ a={top:r.top,left:r.left}; break; }
   }
   if(!a) return null;
   return {authorTop:Math.round(a.top), authorLeft:Math.round(a.left)};
@@ -83,7 +84,7 @@ SCRAPE_AUTHORS_JS = r"""()=>{
   for(const e of document.querySelectorAll('div,span,a')){
     const own=Array.from(e.childNodes).filter(n=>n.nodeType===3).map(n=>n.textContent).join('').trim();
     const r=e.getBoundingClientRect();
-    if(own && r.left>=550 && r.left<=610 && r.top>240 && r.top<860 && !kw.test(own) && own.length<40) out.push(own);
+    if(own && r.left>=540 && r.left<=900 && r.top>240 && r.top<860 && !kw.test(own) && own.length<40) out.push(own);
   }
   return out;
 }"""

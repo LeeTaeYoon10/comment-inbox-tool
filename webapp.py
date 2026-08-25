@@ -80,7 +80,7 @@ def get_rows():
 def check_login():
     """로그인 브라우저(CDP 9222)가 살아있고 Business Suite에 로그인됐는지."""
     try:
-        raw = urllib.request.urlopen("http://localhost:9222/json", timeout=2).read()
+        raw = urllib.request.urlopen("http://127.0.0.1:9222/json", timeout=2).read()
         tabs = json.loads(raw)
     except Exception:
         return {"browser": False, "logged_in": False}

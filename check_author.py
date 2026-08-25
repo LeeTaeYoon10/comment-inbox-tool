@@ -14,7 +14,7 @@ def main():
     url = (f"https://business.facebook.com/latest/inbox/{platform}"
            f"?business_id={BIZ}&page_id={page_id}&asset_id={page_id}&mailbox_id={page_id}")
     with sync_playwright() as p:
-        b = p.chromium.connect_over_cdp("http://localhost:9222")
+        b = p.chromium.connect_over_cdp("http://127.0.0.1:9222")
         page = b.contexts[0].pages[0]
         page.goto(url, wait_until="domcontentloaded")
         page.wait_for_timeout(6000)
